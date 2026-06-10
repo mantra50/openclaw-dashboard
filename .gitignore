@@ -30,7 +30,9 @@ yarn-error.log*
 .env.production.local
 
 # convex
-convex/_generated/
+# 只 ignore .js(运行时不需要);commit .d.ts 让 Vercel build 能 import
+convex/_generated/*.js
+convex/_generated/*.js.map
 convex/.convex/
 
 # typescript
