@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Doc } from "../../../convex/_generated/dataModel";
 import { ActivityCard } from "@/components/ActivityCard";
+import { ActivityDetailModal } from "@/components/ActivityDetailModal";
 import { cn } from "@/lib/utils";
 
 type TimeRange = "today" | "yesterday" | "all";
@@ -46,6 +48,7 @@ export default function ActivityPage() {
   const [selected, setSelected] = useState<Set<string>>(
     new Set(ACTIVITY_TYPES),
   );
+  const [detailActivity, setDetailActivity] = useState<Doc<"activities"> | null>(null);
 
   const bounds = range === "all" ? null : getRangeMs(range);
 
@@ -178,12 +181,21 @@ export default function ActivityPage() {
           ) : (
             <div>
               {filtered.map((a) => (
-                <ActivityCard key={a._id} activity={a} />
+                <ActivityCard
+                  key={a._id}
+                  activity={a}
+                  onClick={() => setDetailActivity(a)}
+                />
               ))}
             </div>
           )}
         </main>
       </div>
+
+      <ActivityDetailModal
+        activity={detailActivity}
+        onClose={() => setDetailActivity(null)}
+      />
     </div>
   );
 }

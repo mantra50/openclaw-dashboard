@@ -6,7 +6,13 @@ import { cn, relativeTime, formatTime } from "@/lib/utils";
 
 type Activity = Doc<"activities">;
 
-export function ActivityCard({ activity }: { activity: Activity }) {
+export function ActivityCard({
+  activity,
+  onClick,
+}: {
+  activity: Activity;
+  onClick?: () => void;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   const {
@@ -73,11 +79,20 @@ export function ActivityCard({ activity }: { activity: Activity }) {
           >
             {relativeTime(timestamp)}
           </div>
-          <div className="mt-1.5 flex justify-end">
+          <div className="mt-1.5 flex justify-end items-center gap-2">
             <span
               className={cn("status-dot", `status-dot-${status ?? "info"}`)}
               title={status ?? "info"}
             />
+            {onClick && (
+              <button
+                onClick={onClick}
+                className="text-xs font-mono text-text-muted hover:text-accent-blue opacity-0 group-hover:opacity-100 transition-opacity"
+                title="查看完整元数据"
+              >
+                完整 →
+              </button>
+            )}
           </div>
         </div>
       </div>
