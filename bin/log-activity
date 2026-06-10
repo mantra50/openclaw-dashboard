@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# log-activity wrapper - 让 agent (OpenClaw) 一行调用
+# 用法:
+#   log-activity --type task_complete --title "..."
+#   log-activity --type tool_call --title "..." --detail "..."
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec node "$SCRIPT_DIR/scripts/log-activity.mjs" "$@"

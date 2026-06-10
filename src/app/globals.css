@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-base: #0b0d12;
+  --bg-panel: #13161e;
+  --bg-hover: #1a1e28;
+  --bg-active: #1f2430;
+  --border: #2a2f3d;
+  --border-strong: #3a4053;
+  --text-primary: #e5e7eb;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+}
+
+html,
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4a5163;
+}
+
+/* Type badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--font-mono, ui-monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-tool_call { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.badge-task_complete { background: rgba(74,222,128,0.15); color: #4ade80; }
+.badge-doc_created { background: rgba(168,85,247,0.15); color: #c084fc; }
+.badge-file_edit { background: rgba(6,182,212,0.15); color: #22d3ee; }
+.badge-command_run { background: rgba(245,158,11,0.15); color: #fbbf24; }
+.badge-error { background: rgba(239,68,68,0.2); color: #f87171; }
+.badge-note { background: rgba(156,163,175,0.15); color: #9ca3af; }
+.badge-conversation { background: rgba(168,85,247,0.15); color: #c084fc; }
+
+/* Status dots */
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.status-dot-success { background: #4ade80; }
+.status-dot-warning { background: #f59e0b; }
+.status-dot-error { background: #ef4444; }
+.status-dot-info { background: #60a5fa; }
+
+/* Priority colors */
+.priority-low { color: #6b7280; }
+.priority-medium { color: #f59e0b; }
+.priority-high { color: #ef4444; }
+
+/* Animation: live dot */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
