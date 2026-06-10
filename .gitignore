@@ -37,3 +37,6 @@ convex/.convex/
 *.tsbuildinfo
 next-env.d.ts
 .vercel
+
+.vercel/
+pnpm-workspace.yaml
