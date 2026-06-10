@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { weekStart } from "@/lib/utils";
 import { CalendarWeek } from "@/components/CalendarWeek";
 import { TaskModal } from "@/components/TaskModal";
@@ -14,7 +15,7 @@ export default function CalendarPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalInitial, setModalInitial] = useState<
     | (Partial<{
-        _id: string;
+        _id: Id<"scheduledTasks">;
         title: string;
         description: string;
         dueAt: number;
@@ -22,7 +23,7 @@ export default function CalendarPage() {
         status: "pending" | "in_progress" | "done" | "cancelled";
         priority: "low" | "medium" | "high";
         category: string;
-      }> & { _id?: string })
+      }> & { _id?: Id<"scheduledTasks"> })
     | null
   >(null);
 

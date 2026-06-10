@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import type { Doc, Id } from "../../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
-// convex/_generated/dataModel 还没生成,先用 any 占位
-type ScheduledTask = any;
+type ScheduledTask = Doc<"scheduledTasks">;
 
 type Priority = "low" | "medium" | "high";
 type Status = "pending" | "in_progress" | "done" | "cancelled";
@@ -15,7 +15,7 @@ export interface TaskModalProps {
   open: boolean;
   onClose: () => void;
   /** 编辑时传完整的 task;新建时只传要预填的字段(比如 dueAt) */
-  initial?: Partial<ScheduledTask> & { _id?: string };
+  initial?: Partial<ScheduledTask> & { _id?: Id<"scheduledTasks"> };
   /** 成功 create / update 后回调(可选) */
   onSubmit?: (task: ScheduledTask) => void;
 }
