@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LayoutDashboard, Radio, CalendarDays, Search, Radar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/", label: "总览", icon: "◆" },
-  { href: "/activity", label: "Activity Feed", icon: "≣" },
-  { href: "/calendar", label: "Calendar", icon: "▦" },
-  { href: "/search", label: "Global Search", icon: "◎" },
+  { href: "/", label: "总览", icon: LayoutDashboard },
+  { href: "/activity", label: "Activity Feed", icon: Radio },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/search", label: "Global Search", icon: Search },
 ];
 
 export function Sidebar() {
@@ -17,7 +18,7 @@ export function Sidebar() {
     <aside className="w-56 shrink-0 border-r border-border bg-bg-panel h-screen sticky top-0 flex flex-col">
       <div className="p-5 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-accent-blue text-lg">⌘</span>
+          <Radar className="w-5 h-5 text-accent-blue" strokeWidth={2} />
           <span className="font-mono text-sm font-semibold tracking-wide">MISSION CONTROL</span>
         </div>
         <div className="text-xs text-text-muted mt-1 font-mono">v0.1 · 小八</div>
@@ -39,7 +40,7 @@ export function Sidebar() {
                   : "text-text-secondary hover:bg-bg-hover hover:text-text-primary border-l-2 border-transparent"
               )}
             >
-              <span className="text-base w-4 text-center font-mono">{item.icon}</span>
+              <item.icon className="w-4 h-4 shrink-0" strokeWidth={2} />
               <span>{item.label}</span>
             </Link>
           );
