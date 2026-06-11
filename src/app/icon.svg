@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-linecap="round" stroke-linejoin="round">
+  <title>Mission Control</title>
+  <!-- 外环 -->
+  <circle cx="12" cy="12" r="9" stroke-width="2.5"/>
+  <!-- 内环(60% 透明) -->
+  <circle cx="12" cy="12" r="5" stroke-width="2" opacity="0.55"/>
+  <!-- 中心点(实心) -->
+  <circle cx="12" cy="12" r="2" fill="#3b82f6" stroke="none"/>
+  <!-- 扫描线(45° 方向) -->
+  <line x1="12" y1="12" x2="19" y2="5" stroke-width="2.5"/>
+</svg>
