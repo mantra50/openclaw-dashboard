@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { Doc } from "../../convex/_generated/dataModel";
 import { cn, relativeTime, formatTime } from "@/lib/utils";
 
+const KNOWN_TYPES = new Set(["tool_call","task_complete","doc_created","file_edit","command_run","error","note","conversation"]);
+
 type Activity = Doc<"activities">;
 
 export function ActivityCard({
@@ -39,7 +41,7 @@ export function ActivityCard({
   return (
     <article className="group bg-bg-panel border-b border-border px-5 py-3.5 hover:bg-bg-hover transition-colors">
       <div className="flex items-start gap-3">
-        <span className={cn("badge shrink-0 mt-0.5", `badge-${type}`)}>
+        <span className={cn("badge shrink-0 mt-0.5", KNOWN_TYPES.has(type) ? `badge-${type}` : "badge-default")}>
           {type}
         </span>
 

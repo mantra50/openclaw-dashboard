@@ -100,3 +100,6 @@ body {
   color: #4ade80;
   border: 1px solid rgba(74,222,128,0.3);
 }
+
+/* Fallback for unknown types */
+.badge-default { background: rgba(107,114,128,0.18); color: #9ca3af; border: 1px dashed rgba(156,163,175,0.4); }

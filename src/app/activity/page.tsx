@@ -16,6 +16,7 @@ const TIME_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: "all", label: "全部" },
 ];
 
+// 已知的 8 种 type(有特定颜色 badge),排在前面
 const ACTIVITY_TYPES = [
   "tool_call",
   "task_complete",
@@ -78,13 +79,29 @@ export default function ActivityPage() {
     return Array.from(set).sort();
   }, [raw]);
 
-  // 首次出现:全选;后续:新 agent 增量加入(不覆盖用户已取消的选择)
+  // 动态从数据中提取 type 列表(不 hard-code,新 type 自动出现)
+  // 已知 8 种固定 8 种排前面,数据中出现但不在已知 8 种的(extra types)排后面
+  const typesInData = useMemo(() => {
+    if (!raw) return [] as { value: string; isExtra: boolean }[];
+    const seen = new Set<string>();
+    for (const a of raw) {
+      if (a.type) seen.add(a.type);
+    }
+    const known = ACTIVITY_TYPES.filter((t) => seen.has(t));
+    const extras = Array.from(seen)
+      .filter((t) => !ACTIVITY_TYPES.includes(t as (typeof ACTIVITY_TYPES)[number]))
+      .sort();
+    return [
+      ...known.map((value) => ({ value, isExtra: false })),
+      ...extras.map((value) => ({ value, isExtra: true })),
+    ];
+  }, [raw]);
+
+  // 首次出现:全选;后续:新 type/agent 增量加入(不覆盖用户已取消的选择)
   useEffect(() => {
     if (agentsInData.length === 0) return;
     setSelectedAgents((prev) => {
-      // 首次(空 Set) → 全部勾上
       if (prev.size === 0) return new Set(agentsInData);
-      // 后续:把新出现的 agent 加进 Set
       const next = new Set(prev);
       let added = false;
       for (const a of agentsInData) {
@@ -96,6 +113,24 @@ export default function ActivityPage() {
       return added ? next : prev;
     });
   }, [agentsInData]);
+
+  useEffect(() => {
+    const allKnown = ACTIVITY_TYPES as readonly string[];
+    setSelected((prev) => {
+      // 首次(空 Set) → 全选 8 种
+      if (prev.size === 0) return new Set(allKnown);
+      // 后续:把新出现的 type 加进 Set(包括 extras)
+      const next = new Set(prev);
+      let added = false;
+      for (const t of typesInData) {
+        if (!next.has(t.value)) {
+          next.add(t.value);
+          added = true;
+        }
+      }
+      return added ? next : prev;
+    });
+  }, [typesInData]);
 
   const filtered = useMemo(() => {
     if (!raw) return undefined;
@@ -190,41 +225,65 @@ export default function ActivityPage() {
           <div className="mb-3 flex items-center justify-between">
             <div className="font-mono text-xs uppercase tracking-wide text-text-muted">
               类型
+              {typesInData.length > 0 && (
+                <span className="ml-1.5 text-text-muted/60">
+                  ({typesInData.length})
+                </span>
+              )}
             </div>
             <button
-              onClick={() => setSelected(new Set(ACTIVITY_TYPES))}
+              onClick={() => {
+                setSelected(new Set(ACTIVITY_TYPES));
+                // 同步加 extras
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  for (const t of typesInData) {
+                    if (t.isExtra) next.add(t.value);
+                  }
+                  return next;
+                });
+              }}
               className="font-mono text-xs text-text-muted hover:text-text-secondary"
               title="全选"
             >
               ↻
             </button>
           </div>
-          <ul className="space-y-1.5">
-            {ACTIVITY_TYPES.map((t) => {
-              const checked = selected.has(t);
-              return (
-                <li key={t}>
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleType(t)}
-                      className="cursor-pointer accent-accent-blue"
-                    />
-                    <span
-                      className={cn(
-                        "badge",
-                        `badge-${t}`,
-                        !checked && "opacity-35",
-                      )}
-                    >
-                      {t}
-                    </span>
-                  </label>
-                </li>
-              );
-            })}
-          </ul>
+          {typesInData.length === 0 ? (
+            <div className="font-mono text-xs text-text-muted/60">
+              暂无 type 数据
+            </div>
+          ) : (
+            <ul className="space-y-1.5">
+              {typesInData.map(({ value: t, isExtra }) => {
+                const checked = selected.has(t);
+                return (
+                  <li key={t}>
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleType(t)}
+                        className="cursor-pointer accent-accent-blue"
+                      />
+                      <span
+                        className={cn(
+                          "badge",
+                          isExtra ? "badge-default" : `badge-${t}`,
+                          !checked && "opacity-35",
+                        )}
+                      >
+                        {t}
+                        {isExtra && (
+                          <span className="ml-1.5 opacity-60">new</span>
+                        )}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </aside>
 
