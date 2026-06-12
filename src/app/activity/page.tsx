@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
@@ -48,7 +48,12 @@ export default function ActivityPage() {
   const [selected, setSelected] = useState<Set<string>>(
     new Set(ACTIVITY_TYPES),
   );
-  const [detailActivity, setDetailActivity] = useState<Doc<"activities"> | null>(null);
+  const [selectedAgents, setSelectedAgents] = useState<Set<string>>(
+    new Set(),
+  );
+  const [detailActivity, setDetailActivity] = useState<Doc<"activities"> | null>(
+    null,
+  );
 
   const bounds = range === "all" ? null : getRangeMs(range);
 
@@ -63,15 +68,48 @@ export default function ActivityPage() {
 
   const raw = range === "all" ? allQuery : rangeQuery;
 
+  // 动态从数据中提取 agent 列表(不 hard-code,新 agent 自动出现)
+  const agentsInData = useMemo(() => {
+    if (!raw) return [] as string[];
+    const set = new Set<string>();
+    for (const a of raw) {
+      if (a.agent) set.add(a.agent);
+    }
+    return Array.from(set).sort();
+  }, [raw]);
+
+  // 首次出现:全选;后续:新 agent 增量加入(不覆盖用户已取消的选择)
+  useEffect(() => {
+    if (agentsInData.length === 0) return;
+    setSelectedAgents((prev) => {
+      // 首次(空 Set) → 全部勾上
+      if (prev.size === 0) return new Set(agentsInData);
+      // 后续:把新出现的 agent 加进 Set
+      const next = new Set(prev);
+      let added = false;
+      for (const a of agentsInData) {
+        if (!next.has(a)) {
+          next.add(a);
+          added = true;
+        }
+      }
+      return added ? next : prev;
+    });
+  }, [agentsInData]);
+
   const filtered = useMemo(() => {
     if (!raw) return undefined;
     try {
       if (selected.size === 0) return [];
-      return raw.filter((a) => selected.has(a.type));
+      if (selectedAgents.size === 0) return [];
+      return raw.filter(
+        (a) =>
+          selected.has(a.type) && (!a.agent || selectedAgents.has(a.agent)),
+      );
     } catch {
       return [];
     }
-  }, [raw, selected]);
+  }, [raw, selected, selectedAgents]);
 
   const toggleType = (t: string) => {
     setSelected((prev) => {
@@ -82,10 +120,72 @@ export default function ActivityPage() {
     });
   };
 
+  const toggleAgent = (a: string) => {
+    setSelectedAgents((prev) => {
+      const next = new Set(prev);
+      if (next.has(a)) next.delete(a);
+      else next.add(a);
+      return next;
+    });
+  };
+
   return (
     <div className="flex h-full">
-      {/* 左侧:类型多选 filter */}
+      {/* 左侧:多选 filter 区块 */}
       <aside className="w-56 shrink-0 overflow-y-auto border-r border-border bg-bg-panel">
+        {/* ── Agent ── */}
+        <div className="p-5 border-b border-border">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="font-mono text-xs uppercase tracking-wide text-text-muted">
+              Agent
+              {agentsInData.length > 0 && (
+                <span className="ml-1.5 text-text-muted/60">
+                  ({agentsInData.length})
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => setSelectedAgents(new Set(agentsInData))}
+              className="font-mono text-xs text-text-muted hover:text-text-secondary"
+              title="全选"
+            >
+              ↻
+            </button>
+          </div>
+          {agentsInData.length === 0 ? (
+            <div className="font-mono text-xs text-text-muted/60">
+              暂无 agent 数据
+            </div>
+          ) : (
+            <ul className="space-y-1.5">
+              {agentsInData.map((a) => {
+                const checked = selectedAgents.has(a);
+                return (
+                  <li key={a}>
+                    <label className="flex cursor-pointer items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleAgent(a)}
+                        className="cursor-pointer accent-accent-blue"
+                      />
+                      <span
+                        className={cn(
+                          "badge badge-agent",
+                          !checked && "opacity-35",
+                        )}
+                      >
+                        {a}
+                      </span>
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* ── 类型 ── */}
         <div className="p-5">
           <div className="mb-3 flex items-center justify-between">
             <div className="font-mono text-xs uppercase tracking-wide text-text-muted">
@@ -131,7 +231,7 @@ export default function ActivityPage() {
       {/* 主区域 */}
       <div className="flex min-w-0 flex-1 flex-col">
         <main className="flex-1 overflow-y-auto">
-          {/* sticky header:时间过滤 + 实时 dot */}
+          {/* sticky header:时间过滤 + 实时 dot + 计数 */}
           <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-bg-panel px-6 py-4">
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-semibold">Activity Feed</h1>
@@ -140,9 +240,16 @@ export default function ActivityPage() {
                 <span>实时</span>
               </span>
               {filtered && filtered.length > 0 && (
-                <span className="font-mono text-xs text-text-muted">
-                  · {filtered.length} 条
-                </span>
+                <>
+                  <span className="font-mono text-xs text-text-muted">
+                    · {filtered.length} 条
+                  </span>
+                  {agentsInData.length > 0 && (
+                    <span className="font-mono text-xs text-text-muted/60">
+                      · {agentsInData.length} agent
+                    </span>
+                  )}
+                </>
               )}
             </div>
             <div className="flex items-center gap-1 rounded-md border border-border bg-bg-base p-0.5">
@@ -173,9 +280,11 @@ export default function ActivityPage() {
               reason={
                 selected.size === 0
                   ? "no-types"
-                  : !raw || raw.length === 0
-                    ? "no-data"
-                    : "no-match"
+                  : selectedAgents.size === 0
+                    ? "no-agents"
+                    : !raw || raw.length === 0
+                      ? "no-data"
+                      : "no-match"
               }
             />
           ) : (
@@ -223,7 +332,7 @@ function ActivitySkeleton() {
 function EmptyState({
   reason,
 }: {
-  reason: "no-data" | "no-match" | "no-types";
+  reason: "no-data" | "no-match" | "no-types" | "no-agents";
 }) {
   const messages: Record<typeof reason, { title: string; hint: string }> = {
     "no-data": {
@@ -232,11 +341,15 @@ function EmptyState({
     },
     "no-match": {
       title: "没有匹配的 activity",
-      hint: "调整左侧类型过滤器或时间范围",
+      hint: "调整左侧 Agent/类型 过滤器或时间范围",
     },
     "no-types": {
       title: "没有选中任何类型",
       hint: "勾选至少一个类型,或点 ↻ 全选",
+    },
+    "no-agents": {
+      title: "没有选中任何 agent",
+      hint: "勾选至少一个 agent,或点 ↻ 全选",
     },
   };
   const m = messages[reason];

@@ -30,9 +30,8 @@ yarn-error.log*
 .env.production.local
 
 # convex
-# 只 ignore .js(运行时不需要);commit .d.ts 让 Vercel build 能 import
-convex/_generated/*.js
-convex/_generated/*.js.map
+# 不要 ignore generated 文件 — Vercel auto-deploy 不跑 convex codegen
+# .d.ts 和 .js 都需要 commit,否则 build 时 import 不到
 convex/.convex/
 
 # typescript

@@ -94,3 +94,9 @@ body {
   border-radius: 50%;
   animation: pulse-live 1.5s ease-in-out infinite;
 }
+/* Agent badge */
+.badge-agent {
+  background: rgba(74,222,128,0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.3);
+}
